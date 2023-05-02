@@ -6,16 +6,17 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraInfo;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.core.UseCaseGroup;
 import androidx.camera.core.ViewPort;
+import androidx.camera.core.ZoomState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LifecycleOwner;
 
 import android.Manifest;
 import android.content.ContentValues;
@@ -23,7 +24,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Range;
 import android.util.Rational;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private CameraInfo cameraInfo;
     private AspectRatio aspectRatio = AspectRatio.RATIO_1_1;
 
+    private Camera camera;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
         viewBinding.takePhotoButton.setOnClickListener(v -> takePhoto());
         viewBinding.switchAspectRatioButton.setOnClickListener(v -> switchAspectRatio());
         viewBinding.switchAspectRatioButton.setText(aspectRatio.screenName);
+        viewBinding.zoomMinusButton.setOnClickListener(v -> zoomOut());
+        viewBinding.zoomPlusButton.setOnClickListener(v -> zoomIn());
+        viewBinding.exposureMinusButton.setOnClickListener(v -> countDownExposureIndex());
+        viewBinding.exposurePlusButton.setOnClickListener(v -> countUpExposureIndex());
         cameraExecutor = Executors.newSingleThreadExecutor();
     }
 
@@ -126,6 +135,62 @@ public class MainActivity extends AppCompatActivity {
         bindCameraUseCases();
     }
 
+    private void zoomIn() {
+        if (cameraInfo == null || cameraControl == null) {
+            return;
+        }
+        ZoomState zoomState = cameraInfo.getZoomState().getValue();
+        float currentRatio = (zoomState != null) ? zoomState.getZoomRatio() : 1;
+        float maxRatio = (zoomState != null) ? zoomState.getMaxZoomRatio() : 1;
+        float leftRatio = maxRatio - currentRatio;
+        if (leftRatio >= 1) {
+            cameraControl.setZoomRatio((float) Math.floor(++currentRatio));
+        } else if (leftRatio >= 0.1f) {
+            cameraControl.setZoomRatio(currentRatio + 0.1f);
+        } else if (leftRatio > 0) {
+            cameraControl.setZoomRatio(maxRatio);
+        }
+    }
+
+    private void zoomOut() {
+        if (cameraInfo == null || cameraControl == null) {
+            return;
+        }
+        ZoomState zoomState = cameraInfo.getZoomState().getValue();
+        float currentRatio = (zoomState != null) ? zoomState.getZoomRatio() : 1;
+        float minRatio = (zoomState != null) ? zoomState.getMinZoomRatio() : 1;
+        float leftRatio = currentRatio - minRatio;
+        if (leftRatio >= 1) {
+            cameraControl.setZoomRatio((float) Math.floor(--currentRatio));
+        } else if (leftRatio >= 0.1f) {
+            cameraControl.setZoomRatio(currentRatio - 0.1f);
+        } else if (leftRatio > 0) {
+            cameraControl.setZoomRatio(minRatio);
+        }
+    }
+
+    private void countUpExposureIndex() {
+        if (cameraInfo == null || cameraControl == null) {
+            return;
+        }
+        int currentIndex = cameraInfo.getExposureState().getExposureCompensationIndex();
+        Range<Integer> range = cameraInfo.getExposureState().getExposureCompensationRange();
+        if (range.getUpper() > currentIndex) {
+            cameraControl.setExposureCompensationIndex(++currentIndex).addListener(() -> outputExposureInfo(viewBinding.exposureInfo), ContextCompat.getMainExecutor(this));
+        }
+    }
+
+    private void countDownExposureIndex() {
+        if (cameraInfo == null || cameraControl == null) {
+            return;
+        }
+        int currentIndex = cameraInfo.getExposureState().getExposureCompensationIndex();
+        Range<Integer> range = cameraInfo.getExposureState().getExposureCompensationRange();
+        if (range.getLower() < currentIndex) {
+            cameraControl.setExposureCompensationIndex(--currentIndex).addListener(() -> outputExposureInfo(viewBinding.exposureInfo), ContextCompat.getMainExecutor(this));
+        }
+    }
+
     private void bindCameraUseCases() {
         if (cameraProvider == null) {
             return;
@@ -154,11 +219,19 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         cameraProvider.unbindAll();
+        if (camera != null) {
+            removeZoomStateObservers(camera.getCameraInfo());
+        }
+
         CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, useCases);
+        camera = cameraProvider.bindToLifecycle(this, cameraSelector, useCases);
         preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
         cameraControl = camera.getCameraControl();
         cameraInfo = camera.getCameraInfo();
+
+        outputExposureInfo(viewBinding.exposureInfo);
+
+        observeZoomState(viewBinding.zoomInfo);
     }
 
     private void requestPermissions() {
@@ -173,29 +246,35 @@ public class MainActivity extends AppCompatActivity {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    enum AspectRatio {
-        RATIO_4_3(4.0 / 3.0, "4:3"),
-        RATIO_16_9(16.0 / 9.0, "16:9"),
-        RATIO_1_1(1.0, "1:1"),
-        ;
-        final double value;
-        final String screenName;
-
-        AspectRatio(double value, String screenName) {
-            this.value = value;
-            this.screenName = screenName;
+    private void outputExposureInfo(TextView textView) {
+        if (cameraInfo == null) {
+            return;
         }
+        ExposureState exposureState = cameraInfo.getExposureState();
+        int exposureIndex = exposureState.getExposureCompensationIndex();
+        Range<Integer> exposureRange = exposureState.getExposureCompensationRange();
+        Rational exposureStep = exposureState.getExposureCompensationStep();
+        float exposureStepValue = exposureStep.floatValue();
+        String info = "exposure= " + (exposureIndex * exposureStepValue) + " (" + (exposureRange.getLower() * exposureStepValue) + "～" + (exposureRange.getUpper() * exposureStepValue) + ", " + exposureStep + ")";
+        textView.setText(info);
+    }
 
-        static AspectRatio next(AspectRatio origin) {
-            switch (origin) {
-                case RATIO_1_1:
-                    return RATIO_4_3;
-                case RATIO_16_9:
-                    return RATIO_1_1;
-                case RATIO_4_3:
-                default:
-                    return RATIO_16_9;
-            }
+    private void observeZoomState(TextView textView) {
+        if (cameraInfo == null) {
+            return;
         }
+        cameraInfo.getZoomState().observe(this, zoomState -> {
+            float linear = zoomState.getLinearZoom();
+            float ratio = zoomState.getZoomRatio();
+            float minRatio = zoomState.getMinZoomRatio();
+            float maxRatio = zoomState.getMaxZoomRatio();
+            String info = "zoom(linear)= " + linear + "\n";
+            info += "zoom(ratio)= " + ratio + " (" + minRatio + "～" + maxRatio + ")";
+            textView.setText(info);
+        });
+    }
+
+    private void removeZoomStateObservers(CameraInfo cameraInfo) {
+        cameraInfo.getZoomState().removeObservers(this);
     }
 }
