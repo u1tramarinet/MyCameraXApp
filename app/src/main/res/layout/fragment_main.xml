@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/parameterGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/zoomSlider"
+        app:layout_constraintEnd_toStartOf="@id/verticalRightLine"
+        app:layout_constraintStart_toStartOf="@id/verticalLeftLine"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/aspect_ratio_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_image_aspect_ratio_24"
+            app:iconGravity="top"
+            app:iconPadding="0dp"
+            tools:text="1:1" />
+
+        <Button
+            android:id="@+id/exposure_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_exposure_24"
+            app:iconGravity="top"
+            app:iconPadding="0dp"
+            tools:text="±0" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+    <Button
+        android:id="@+id/zoomOutIcon"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:importantForAccessibility="no"
+        app:icon="@drawable/baseline_zoom_out_24"
+        app:layout_constraintBottom_toBottomOf="@id/zoomSlider"
+        app:layout_constraintDimensionRatio="h,1:1"
+        app:layout_constraintStart_toEndOf="@id/verticalLeftLine"
+        app:layout_constraintTop_toTopOf="@id/zoomSlider" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/zoomSlider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toTopOf="@id/photoButton"
+        app:layout_constraintEnd_toStartOf="@id/zoomInIcon"
+        app:layout_constraintStart_toEndOf="@id/zoomOutIcon" />
+
+    <Button
+        android:id="@+id/zoomInIcon"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:importantForAccessibility="no"
+        app:icon="@drawable/baseline_zoom_in_24"
+        app:layout_constraintBottom_toBottomOf="@id/zoomSlider"
+        app:layout_constraintDimensionRatio="h,1:1"
+        app:layout_constraintEnd_toStartOf="@id/verticalRightLine"
+        app:layout_constraintTop_toTopOf="@id/zoomSlider" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/photoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:importantForAccessibility="no"
+        android:text="@string/take_photo"
+        app:icon="@android:drawable/ic_menu_camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/verticalRightLine"
+        app:layout_constraintStart_toEndOf="@id/verticalLeftLine" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalLeftLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".10" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalRightLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".90" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,8 +5,8 @@ public enum AspectRatio {
     RATIO_16_9(16.0 / 9.0, "16:9"),
     RATIO_1_1(1.0, "1:1"),
     ;
-    final double value;
-    final String screenName;
+    public final double value;
+    public final String screenName;
 
     AspectRatio(double value, String screenName) {
         this.value = value;
