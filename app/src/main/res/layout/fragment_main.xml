@@ -12,6 +12,67 @@
         android:layout_height="match_parent" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/aspectRatioGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/exposureGroup"
+        app:layout_constraintEnd_toStartOf="@id/verticalRightLine"
+        app:layout_constraintStart_toStartOf="@id/verticalLeftLine"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/aspect_ratio_1_1_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aspect_ratio_1_1" />
+
+        <Button
+            android:id="@+id/aspect_ratio_16_9_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aspect_ratio_16_9" />
+
+        <Button
+            android:id="@+id/aspect_ratio_4_3_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aspect_ratio_4_3" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/exposureGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/parameterGroup"
+        app:layout_constraintEnd_toStartOf="@id/verticalRightLine"
+        app:layout_constraintStart_toStartOf="@id/verticalLeftLine"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/exposure_minus_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/minus_1" />
+
+        <Button
+            android:id="@+id/exposure_plus_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/plus_1" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/parameterGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -43,7 +104,6 @@
             tools:text="±0" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
-
 
     <Button
         android:id="@+id/zoomOutIcon"

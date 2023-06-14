@@ -5,6 +5,7 @@ import android.provider.MediaStore;
 import android.util.Range;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraInfo;
@@ -15,6 +16,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.u1tramarinet.mycameraxapp.AspectRatio;
+import com.u1tramarinet.mycameraxapp.Parameter;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -26,7 +28,7 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<Void> _initializeCameraEvent = new MutableLiveData<>();
     private final MutableLiveData<ExposureState> _exposureState = new MutableLiveData<>();
     private final MutableLiveData<AspectRatio> _aspectRatio = new MutableLiveData<>();
-
+    private final MutableLiveData<Parameter> _shownParameter = new MutableLiveData<>();
     private Camera camera;
     private Executor mainExecutor;
 
@@ -44,6 +46,10 @@ public class MainViewModel extends ViewModel {
 
     public final LiveData<AspectRatio> aspectRatio() {
         return _aspectRatio;
+    }
+
+    public final LiveData<Parameter> shownParameter() {
+        return _shownParameter;
     }
 
     public void initializeCamera() {
@@ -67,7 +73,14 @@ public class MainViewModel extends ViewModel {
         _takePhotoValues.setValue(contentValues);
     }
 
+    public void setShownParameter(@Nullable Parameter parameter) {
+        _shownParameter.setValue(parameter);
+    }
+
     public void setAspectRatio(AspectRatio aspectRatio) {
+        if (_aspectRatio.getValue() == aspectRatio) {
+            return;
+        }
         _aspectRatio.setValue(aspectRatio);
     }
 

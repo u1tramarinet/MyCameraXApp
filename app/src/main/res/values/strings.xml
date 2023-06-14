@@ -2,4 +2,9 @@
     <string name="app_name">MyCameraXApp</string>
     <string name="take_photo">Take Photo</string>
     <string name="aspect_ratio">Aspect Ratio</string>
+    <string name="aspect_ratio_1_1">1:1</string>
+    <string name="aspect_ratio_16_9">16:9</string>
+    <string name="aspect_ratio_4_3">4:3</string>
+    <string name="minus_1">-1</string>
+    <string name="plus_1">+1</string>
 </resources>

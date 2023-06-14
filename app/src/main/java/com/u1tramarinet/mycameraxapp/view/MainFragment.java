@@ -27,10 +27,14 @@ import android.util.Rational;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Checkable;
 import android.widget.Toast;
 
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.u1tramarinet.mycameraxapp.AspectRatio;
+import com.u1tramarinet.mycameraxapp.Parameter;
 import com.u1tramarinet.mycameraxapp.databinding.FragmentMainBinding;
 import com.u1tramarinet.mycameraxapp.viewmodel.MainViewModel;
 
@@ -38,15 +42,16 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class MainFragment extends Fragment {
     private FragmentMainBinding viewBinding;
     private MainViewModel viewModel;
-
     private ExecutorService cameraExecutor;
     private ProcessCameraProvider cameraProvider;
     private ImageCapture imageCapture;
-
     private Camera camera;
 
     @Override
@@ -74,10 +79,27 @@ public class MainFragment extends Fragment {
             bindCameraUseCases();
         });
         viewModel.exposureState().observe(getViewLifecycleOwner(), this::updateExposureInfo);
+        viewModel.shownParameter().observe(getViewLifecycleOwner(), this::updateParameter);
+        updateParameter(null);
 
         viewBinding.photoButton.setOnClickListener(v -> viewModel.takePhoto());
         viewBinding.zoomOutIcon.setOnClickListener(v -> viewModel.zoomOut());
         viewBinding.zoomInIcon.setOnClickListener(v -> viewModel.zoomIn());
+        viewBinding.exposureMinusButton.setOnClickListener(v -> viewModel.decreaseExposure());
+        viewBinding.exposurePlusButton.setOnClickListener(v -> viewModel.increaseExposure());
+        viewBinding.aspectRatio11Button.setOnClickListener(v -> viewModel.setAspectRatio(AspectRatio.RATIO_1_1));
+        viewBinding.aspectRatio169Button.setOnClickListener(v -> viewModel.setAspectRatio(AspectRatio.RATIO_16_9));
+        viewBinding.aspectRatio43Button.setOnClickListener(v -> viewModel.setAspectRatio(AspectRatio.RATIO_4_3));
+        viewBinding.aspectRatioButton.setOnClickListener(v -> {
+            if (v instanceof Checkable) {
+                viewModel.setShownParameter(((Checkable) v).isChecked() ? Parameter.ASPECT_RATIO : null);
+            }
+        });
+        viewBinding.exposureButton.setOnClickListener(v -> {
+            if (v instanceof Checkable) {
+                viewModel.setShownParameter(((Checkable) v).isChecked() ? Parameter.EXPOSURE : null);
+            }
+        });
     }
 
     @Override
@@ -185,7 +207,12 @@ public class MainFragment extends Fragment {
         viewBinding.exposureButton.setText(String.valueOf(index * stepValue));
     }
 
-    private void updateAspectRatio(AspectRatio aspectRatio) {
+    private void updateAspectRatio(@NonNull AspectRatio aspectRatio) {
         viewBinding.aspectRatioButton.setText(aspectRatio.screenName);
+    }
+
+    private void updateParameter(@Nullable Parameter parameter) {
+        viewBinding.aspectRatioGroup.setVisibility((parameter == Parameter.ASPECT_RATIO) ? View.VISIBLE : View.GONE);
+        viewBinding.exposureGroup.setVisibility((parameter == Parameter.EXPOSURE) ? View.VISIBLE : View.GONE);
     }
 }

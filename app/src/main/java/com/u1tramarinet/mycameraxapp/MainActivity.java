@@ -20,14 +20,13 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE = 777;
     private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.CAMERA};
-    private ActivityMainBinding viewBinding;
     private MainViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
-        viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(viewBinding.getRoot());
 
         if (isAllPermissionGranted()) {
